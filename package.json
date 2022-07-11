@@ -1,0 +1,11 @@
+{
+  "name": "pinky_promise_doctors",
+  "version": "1.0.0",
+  "description": "This project contains APIs and services for Pinky Promise Doctor's Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pranav",
+  "license": "ISC"
+}
