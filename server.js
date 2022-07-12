@@ -1,25 +1,59 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
+const cors = require('cors');
+const path = require('path');
+const moment = require('moment-timezone');
+const dotenv = require('dotenv');
+dotenv.config();
 
-app.use(bodyParser.urlencoded({ extended: false })) 
+//End of dependencies
 
-// parse application/json
-app.use(bodyParser.json()) 
+
+
+//Files import
+const doctorsroutes = require('./routes/routes');
+
+
+//Body-parser
+app.use(bodyParser.urlencoded({
+  limit: '50mb',
+  extended: true
+}));
+
+//Body-parser
+app.use(bodyParser.json({
+  limit: '50mb'
+}));
+
+
+//express CORS
+app.use(cors());
+
+
+app.use(express.static(path.join(__dirname, 'Files/Images'))); //image icons access from server
+
+
+//express CORS
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,access_token');
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  next();
+});
+
+//express router
+app.use('/api/doctor-dashboard',doctorsroutes);
 
 
 app.get('/', function (req, res) {
   res.status(200).send('Hello World!');
 });
 
-app.post('/loginUser', function (req, res) {
-    var username= req.body.userName;
-    var password= req.body.password;
-    console.log(username)
-  });
+
 
 var port = process.env.PORT || 3000;
-
 var server = app.listen(port, function() {
-  console.log('Express server listening on port ' + port);
+  console.log('App is running on port: ' + port);
 });
