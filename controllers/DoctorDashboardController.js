@@ -1,9 +1,12 @@
 const service = require("../services/DoctorDashboardService");
-
 var moment = require("moment");
+const { validationResult } = require('express-validator');
 
 exports.loginDoctor = (req, res) => {
-    var response;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     let setdata = {
         email: req.body.email,
         password: req.body.password,
@@ -29,6 +32,10 @@ exports.loginDoctor = (req, res) => {
 };
 
 exports.getPatientConsultationData = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     let setdata = {
         diagnosis_id: req.body.diagnosisid,
         patient_id: req.body.patientid
@@ -52,6 +59,10 @@ exports.getPatientConsultationData = (req, res) => {
 };
 
 exports.updatePatientConsultationData = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     let setdata = {
         medicine_prescribed: req.body.medicine_prescribed,
         diagnosis: req.body.diagnosis,
@@ -69,4 +80,17 @@ exports.updatePatientConsultationData = (req, res) => {
             console.log(error);
         }
     });
+};
+
+exports.patientConsultationAction = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    let action = req.body.action;
+    // action values= RESERVE, APPROVE
+    res.json({
+        success: true, message: "Action Success", data: action
+    })
+    // response in data parameter can be RESERVE or APPROVE    
 };
