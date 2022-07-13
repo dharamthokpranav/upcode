@@ -1,77 +1,100 @@
 const dbaccess = require("../database/dbaccess");
+const queries = require("../database/queries");
+var ObjectId = require('mongodb').ObjectID;
 class DoctorDashboardService {
-  constructor() {}
 
-  async loginDoctor(userInfo, result) {
-    const connection = dbaccess.openConnection();
-    try {
-      //select * from table_name where where email=? and password=?
-      connection.query(
-        "select * from table_name where where email=? and password=?",
-        [userInfo.email, userInfo.password],
-        function (err, res) {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, res);
-          }
-        }
-      );
-    } catch (error) {
-      console.log("Method:LoginUser,File:appservice.js--> " + error);
-    } finally {
-      dbaccess.closeConnection(connection);
-    }
-  }
+    constructor() { }
 
-  async getPatientConsultationData(userInfo, result) {
-    const connection = dbaccess.openConnection();
-    try {
-      //select * from table_name where where email=? and password=?
-      connection.query(
-        "SELECT * FROM pres_master_prescription LEFT JOIN pres_data ON pres_master_prescription.diagnosis_id = pres_data.end_result_id WHERE pres_master_prescription.diagnosis_id = ?",
-        [userInfo.diagnosis_id],
-        function (err, res) {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, res);
-          }
-        }
-      );
-    } catch (error) {
-      console.log("Method:LoginUser,File:appservice.js--> " + error);
-    } finally {
-      dbaccess.closeConnection(connection);
-    }
-  }
+    async loginDoctor(userInfo, result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.doctorLogin, [userInfo.email, userInfo.password], function (err, res) {
+                if (err) {
+                    result(err, null);
+                }
+                else {
+                    result(null, res);
+                }
 
-  async updatePatientConsultationData(updateData, result) {
-    const connection = dbaccess.openConnection();
-    try {
-      //select * from table_name where where email=? and password=?
-      connection.query(
-        " UPDATE pres_master_prescription SET pres_master_prescription.diagnosis = CASE WHEN ?='' THEN pres_master_prescription.diagnosis ELSE ? END, pres_master_prescription.medicine_prescribed = CASE WHEN ?='' THEN pres_master_prescription.medicine_prescribed ELSE ? END WHERE pres_master_prescription.diagnosis_id = ?",
-        [
-          updateData.diagnosis,
-          updateData.diagnosis,
-          updateData.medicine_prescribed,
-          updateData.medicine_prescribed,
-          updateData.diagnosis_id,
-        ],
-        function (err, res) {
-          if (err) {
-            result(err, null);
-          } else {
-            result(null, res);
-          }
+            })
         }
-      );
-    } catch (error) {
-      console.log("Method:LoginUser,File:appservice.js--> " + error);
-    } finally {
-      dbaccess.closeConnection(connection);
+        catch (error) {
+            console.log("Method:LoginUser,File:appservice.js--> " + error);
+        }
+        finally {
+            dbaccess.closeConnection(connection);
+        }
+
     }
-  }
+
+
+    async getPatientConsultationData(userInfo, result) {
+        var responseArray = [];
+        let O_id = new ObjectId(userInfo.patient_id)
+        let reqSeq = {
+            collection: "userdetails",
+            userid: O_id,
+            key: "_id"
+        }
+        const connection = dbaccess.openConnection();
+
+        try {
+            let res_mongodb = await this.getUserDetails(reqSeq);
+            if (res_mongodb.status == 200) {
+                connection.query(
+                    queries.getPatientConsultaion, [userInfo.diagnosis_id], function (err, res_mysql) {
+                        if (err) {
+                            result(err, null);
+                        } else {
+                            responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] })
+                            result(null, responseArray);
+                        }
+                    })
+            }
+            else {
+                console.log("Patient data not found");
+                result(err, null);
+            }
+        }
+        catch (error) {
+            console.log("Method:getPatientConsultationData,File:services\DoctorDashboardService.js--> " + error);
+        }
+        finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+    async updatePatientConsultationData(updateData, result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.updatePatientConsultation, [updateData.diagnosis, updateData.diagnosis, updateData.medicine_prescribed, updateData.medicine_prescribed, updateData.diagnosis_id,], function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:LoginUser,File:appservice.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+
+    //Functions
+    async getUserDetails(req) {
+        try {
+            var Mongo = dbaccess.openMongoDBConnection();
+            var FindData = await Mongo.db(process.env.DBNAME).collection(req.collection).find({ [req.key]: req.userid }).toArray();
+            if (FindData.length > 0) {
+                return ({ status: 200, message: "success", data: FindData });
+            }
+            return ({ status: 400, message: "No data was found in the database" });
+        } catch (error) {
+            return ({ status: 502, message: "error", respText: error.message });
+        }
+    }
 }
 module.exports = DoctorDashboardService;
