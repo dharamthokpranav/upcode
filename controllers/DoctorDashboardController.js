@@ -29,3 +29,26 @@ exports.loginDoctor = (req, res) => {
 );
 }
 
+exports.getPatientConsultationData = (req, res) => {
+    let setdata = {
+        empid: req.body.empid
+    }
+    var serv=new service();
+    serv.getPatientConsultationData(setdata, function (err, result, fields) {
+        try {
+            if (err){
+                res.send(err);
+            }else{
+            if (result.length > 0) {
+                res.json({ "success": true, "message": "Extracting Data !!", "data": result })
+            } else {
+                res.json({ "success": true, "message": "Extracting Data !!",  "data": result })
+            }
+        }
+        
+}catch (error) {
+        console.log(error);
+    }
+}
+);
+}
