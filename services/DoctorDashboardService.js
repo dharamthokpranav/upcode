@@ -30,7 +30,7 @@ class DoctorDashboardService{
         const connection = dbaccess.openConnection();
         try {
             //select * from table_name where where email=? and password=?
-            connection.query("SELECT * FROM employee LEFT JOIN employeedata ON employee.empid = employeedata.empid LEFT JOIN booksdata ON employee.empid = booksdata.empid where employee.empid=?", [userInfo.empid], function (err, res) {
+            connection.query("SELECT * FROM pres_master_prescription LEFT JOIN pres_data ON pres_master_prescription.diagnosis_id = pres_data.end_result_id WHERE pres_master_prescription.diagnosis_id = ?", [userInfo.diagnosis_id], function (err, res) {
                 if (err) {
                     result(err, null);
                 }

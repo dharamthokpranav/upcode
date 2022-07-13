@@ -31,7 +31,7 @@ exports.loginDoctor = (req, res) => {
 
 exports.getPatientConsultationData = (req, res) => {
     let setdata = {
-        empid: req.body.empid
+        diagnosis_id: req.body.diagnosis_id
     }
     var serv=new service();
     serv.getPatientConsultationData(setdata, function (err, result, fields) {
