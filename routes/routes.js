@@ -13,4 +13,8 @@ router.post('/login', doctor_controller.loginDoctor)
 router.post('/getPatientConsultationData', doctor_controller.getPatientConsultationData)
 // router.post('/get-user-info', getUserInfo)
 
+// endpoint to update Patient consultation data
+router.post('/updatePatientConsultationData', doctor_controller.updatePatientConsultationData)
+
+
 module.exports = router;
