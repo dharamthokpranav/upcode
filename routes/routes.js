@@ -28,5 +28,9 @@ router.post('/patientConsultationAction', body('action').not().isEmpty().custom(
     }
 }), doctor_controller.patientConsultationAction)
 
+// endpoint to get dashboard data
+router.get('/getDoctorDashboardData', doctor_controller.getDoctorDashboardData)
+
+
 
 module.exports = router;

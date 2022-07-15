@@ -83,6 +83,31 @@ class DoctorDashboardService {
     }
 
 
+    async getDoctorDashboardData(result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(`${queries.getDoctorDashboardList};${queries.getCurrentDateListCount};${queries.getCurrentWeekListCount}`, function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    let response;
+                    response={
+                        list:res[0],
+                        today_count:res[1][0].today_count,
+                        week_count:res[2][0].week_count
+                    }
+                    result(null, response);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:LoginUser,File:appservice.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+
     //Functions
     async getUserDetails(req) {
         try {

@@ -94,3 +94,18 @@ exports.patientConsultationAction = (req, res) => {
     })
     // response in data parameter can be RESERVE or APPROVE    
 };
+
+exports.getDoctorDashboardData = (req, res) => {
+    var serv = new service();
+    serv.getDoctorDashboardData(function (err, result) {
+        try {
+            if (err) {
+                res.send(err);
+            } else {
+                res.json({ success: true, message: "Patient consultation data found", data: result });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+};
