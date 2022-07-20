@@ -37,7 +37,7 @@ exports.getPatientConsultationData = (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
     let setdata = {
-        diagnosis_id: req.body.diagnosisid,
+        diagnosis_id: req.body.diagnosis_id,
         patient_id: req.body.patientid
     };
     var serv = new service();

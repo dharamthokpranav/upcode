@@ -30,7 +30,7 @@ class DoctorDashboardService {
 
     async getPatientConsultationData(userInfo, result) {
         var responseArray = [];
-        let O_id = new ObjectId(userInfo.patient_id)
+        let O_id = new ObjectId('624d42aac92bd21c7d7ad8fc')
         let reqSeq = {
             collection: "userdetails",
             userid: O_id,
@@ -46,14 +46,52 @@ class DoctorDashboardService {
                         if (err) {
                             result(err, null);
                         } else {
-                            responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] })
-                            result(null, responseArray);
+                            if (res_mysql[0].question_ans != null) {
+                                let tempQuestionArray = res_mysql[0].question_ans.split('||').map(value => (JSON.parse(value).QID))
+                                let tempAnswerMapArray = res_mysql[0].question_ans.split('||').map(value => ({ QID: JSON.parse(value).QID, ID: JSON.parse(value).ID }))
+                                const connection = dbaccess.openConnection();
+                                try {
+                                    connection.query(queries.getQuestionAnswers, [tempQuestionArray], function (error, res_questions) {
+                                        if (error) {
+                                            result(error, null);
+                                        }
+                                        else {
+                                            if (res_questions.length) {
+                                                let questionsTemp = res_questions.map(value => ({
+                                                    question_id: value.question_id,
+                                                    question: value.questions,
+                                                    answer: JSON.parse('[' + value.options + ']').find(({ ID }) => ID === tempAnswerMapArray.find(({ QID }) => QID === value.question_id).ID).Option,
+                                                }))
+                                                res_mysql[0].question_ans = questionsTemp
+                                                responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: res_mysql[0].question_ans })
+                                                result(null, responseArray);
+
+                                            }
+                                            else {
+                                                responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: res_mysql[0].question_ans })
+                                                result(null, responseArray);
+                                            }
+                                        }
+                                    })
+                                }
+                                catch (error) {
+                                    console.log("Method:getPatientConsultationData,File:services\DoctorDashboardService.js--> " + error);
+                                }
+                                finally {
+                                    dbaccess.closeConnection(connection);
+                                }
+                            }
+                            else {
+                                responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: res_mysql[0].question_ans })
+                                result(null, responseArray);
+                            }
+                            // responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] })
+
                         }
                     })
             }
             else {
                 console.log("Patient data not found");
-                result(err, null);
             }
         }
         catch (error) {
@@ -91,10 +129,10 @@ class DoctorDashboardService {
                     result(err, null);
                 } else {
                     let response;
-                    response={
-                        list:res[0],
-                        today_count:res[1][0].today_count,
-                        week_count:res[2][0].week_count
+                    response = {
+                        list: res[0],
+                        today_count: res[1][0].today_count,
+                        week_count: res[2][0].week_count
                     }
                     result(null, response);
                 }
