@@ -38,7 +38,8 @@ exports.getPatientConsultationData = (req, res) => {
     }
     let setdata = {
         diagnosis_id: req.body.diagnosis_id,
-        patient_id: req.body.patientid
+        patient_id: req.body.patientid,
+        prescription_id: req.body.prescription_id
     };
     var serv = new service();
     serv.getPatientConsultationData(setdata, function (err, result) {
