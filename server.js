@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const moment = require('moment-timezone');
 const dotenv = require('dotenv');
+var schedule = require('node-schedule');
 dotenv.config();
 
 //End of dependencies
@@ -13,6 +14,8 @@ dotenv.config();
 
 //Files import
 const doctorsroutes = require('./routes/routes');
+const StatusUpdater = require('./modules/StatusUpdater');
+
 
 
 //Body-parser
@@ -51,7 +54,13 @@ app.get('/', function (req, res) {
   res.status(200).send('Hello World!');
 });
 
+//Schedulers
 
+
+schedule.scheduleJob('*/30 * * * * *', function() { //note : midnight UTC(18:31) is equal to IST(00:01 Or 12:01 am)
+  console.log("10 sec Interval scheduler triggered @ IST: "+moment().tz("Asia/Colombo").format()+" and UTC: "+(new Date()))
+  //  StatusUpdater.statusUpdater();  
+});
 
 var port = process.env.PORT || 3000;
 var server = app.listen(port, function() {

@@ -39,7 +39,7 @@ class DoctorDashboardService {
         const connection = dbaccess.openConnection();
 
         try {
-            let res_mongodb = await this.getUserDetails(reqSeq);
+            let res_mongodb = await this.getUserDetailsFromMongoDB(reqSeq);
             if (res_mongodb.status == 200) {
                 connection.query(queries.getPatientConsultaion, [userInfo.diagnosis_id,userInfo.prescription_id], async function (err, res_mysql) {
                     if (err) {
@@ -84,9 +84,11 @@ class DoctorDashboardService {
             else {
                 console.log("Patient data not found");
             }
+            //result("Something went wrong", null);
         }
         catch (error) {
-            console.log("Method:getPatientConsultationData,File:services\DoctorDashboardService.js--> " + error);
+            console.log("Method:getPatientConsultationData,File:DoctorDashboardService.js--> " + error);
+            result(error, null);
         }
         finally {
             dbaccess.closeConnection(connection);
@@ -109,7 +111,7 @@ class DoctorDashboardService {
             }
             );
         } catch (error) {
-            console.log("Method:LoginUser,File:appservice.js--> " + error);
+            console.log("Method:updatePatientConsultationData,File:DoctorDashboardService.js--> " + error);
         } finally {
             dbaccess.closeConnection(connection);
         }
@@ -134,6 +136,48 @@ class DoctorDashboardService {
             }
             );
         } catch (error) {
+            console.log("Method:getDoctorDashboardData,File:DoctorDashboardService.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+
+    async updateConsultationStatus(overdueArray, result) {
+        const connection = dbaccess.openConnection();
+        var result;
+        try {
+            connection.query(queries.updateConsultationDueStatus, [overdueArray], function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:updateConsultationStatus,File:DoctorDashboardService.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+    //get patient Consultations list
+    async getPatientConsultationList(result) {
+        const connection = dbaccess.openConnection();
+        var result;
+        try {
+            connection.query(queries.getDoctorDashboardList, function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    let response;
+
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
             console.log("Method:LoginUser,File:appservice.js--> " + error);
         } finally {
             dbaccess.closeConnection(connection);
@@ -142,7 +186,7 @@ class DoctorDashboardService {
 
 
     //Functions
-    async getUserDetails(req) {
+    async getUserDetailsFromMongoDB(req) {
         try {
             var Mongo = dbaccess.openMongoDBConnection();
             var FindData = await Mongo.db(process.env.DBNAME).collection(req.collection).find({ [req.key]: req.userid }).toArray();
@@ -151,7 +195,7 @@ class DoctorDashboardService {
             }
             return ({ status: 400, message: "No data was found in the database" });
         } catch (error) {
-            return ({ status: 502, message: "error", respText: error.message });
+            throw error
         }
     }
 

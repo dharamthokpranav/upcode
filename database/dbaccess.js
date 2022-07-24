@@ -34,7 +34,7 @@ exports.openConnection = function () {
 
 exports.openMongoDBConnection = function () {
   const URL = process.env.MONGODBURL;
-  const Mongo = new MongoClient('mongodb+srv://pinkypromisedev:pinkypromise123%40@pinkypromise-dev.1yain.mongodb.net', { useNewUrlParser: true, useUnifiedTopology: true });
+  const Mongo = new MongoClient(URL, { useNewUrlParser: true, useUnifiedTopology: true });
   Mongo.connect().catch(function (error) { console.log("Failed to connect to MongoDB server") });
   return Mongo;
 }
