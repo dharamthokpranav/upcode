@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 //express router
 app.use('/api/doctor-dashboard',doctorsroutes);
 
-
+//TEST API
 app.get('/', function (req, res) {
   res.status(200).send('Hello World!');
 });
@@ -58,8 +58,8 @@ app.get('/', function (req, res) {
 
 
 schedule.scheduleJob('*/30 * * * * *', function() { //note : midnight UTC(18:31) is equal to IST(00:01 Or 12:01 am)
-  console.log("10 sec Interval scheduler triggered @ IST: "+moment().tz("Asia/Colombo").format()+" and UTC: "+(new Date()))
-  //  StatusUpdater.statusUpdater();  
+  console.log("30 sec Interval scheduler triggered @ IST: "+moment().tz("Asia/Colombo").format()+" and UTC: "+(new Date()))
+   StatusUpdater.statusUpdater();  
 });
 
 var port = process.env.PORT || 3000;

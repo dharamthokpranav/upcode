@@ -6,5 +6,5 @@ module.exports = {
     getDoctorDashboardList:"SELECT * FROM pres_data  LEFT JOIN pres_data_master on pres_data.topic_id=pres_data_master.topic_id WHERE end_result_id <> -1 ORDER BY date_time DESC",
     getCurrentDateListCount:"SELECT COUNT(*) as today_count FROM pres_data WHERE end_result_id <> -1 and date(date_time) = CURDATE()",
     getCurrentWeekListCount:"SELECT COUNT(*) as week_count FROM pres_data WHERE end_result_id <> -1 and YEARWEEK(date_time) = YEARWEEK(NOW())",
-    updateConsultationDueStatus:"UPDATE pres_data SET due_status = 'OVERDUE' WHERE ID in (?)"
+    updateConsultationDueStatus:"UPDATE pres_data SET due_status = 'OVERDUE', due_status_update_time=now() WHERE ID in (?)"
 }

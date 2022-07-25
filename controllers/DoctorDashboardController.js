@@ -2,6 +2,7 @@ const service = require("../services/DoctorDashboardService");
 const sendEmail = require("../utils/CommomFunctions");
 var moment = require("moment");
 const { validationResult } = require('express-validator');
+const sendpdf = require("../utils/CommomFunctions");
 
 exports.loginDoctor = (req, res) => {
     const errors = validationResult(req);
@@ -95,7 +96,7 @@ exports.patientConsultationAction = (req, res) => {
     };
     // action values= RESERVE, APPROVE
     var serv = new service();
-    serv.getPatientinfo(setdata,function (err, result) {
+    serv.getPatientContactDetailsFromMongoDB(setdata,function (err, result) {
         try {
             if (err) {
                 res.send(err);
@@ -104,6 +105,7 @@ exports.patientConsultationAction = (req, res) => {
                 // email_to:result.data[0].email
                 // device_token:result.data[0].divicetoken
                 // var emailResponse= sendEmail();
+                // sendpdf();
             }
         } catch (error) {
             console.log(error);

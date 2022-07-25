@@ -30,7 +30,7 @@ class DoctorDashboardService {
 
     async getPatientConsultationData(userInfo, result) {
         var responseArray = [];
-        let O_id = new ObjectId('624d42aac92bd21c7d7ad8fc')
+        let O_id = new ObjectId(userInfo.patient_id);
         let reqSeq = {
             collection: "userdetails",
             userid: O_id,
@@ -181,6 +181,30 @@ class DoctorDashboardService {
             console.log("Method:LoginUser,File:appservice.js--> " + error);
         } finally {
             dbaccess.closeConnection(connection);
+        }
+    }
+
+    async getPatientContactDetailsFromMongoDB(userInfo, result) {
+        var responseArray = [];
+        let O_id = new ObjectId(userInfo.patient_id);
+        let reqSeq = {
+            collection: "userdetails",
+            userid: O_id,
+            key: "_id"
+        }
+        try {
+            let res_mongodb = await this.getUserDetailsFromMongoDB(reqSeq);
+            if (res_mongodb.status == 200) {
+                result(null,res_mongodb.data);
+            }
+            else{
+                result(res_mongodb.data, null);
+            }
+            
+        }catch(error)
+        {
+            console.log("Method:getPatientContactDetailsFromMongoDB,File:DoctorDashboardService.js--> " + error);
+            result(error, null);
         }
     }
 
