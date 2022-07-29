@@ -41,12 +41,12 @@ class DoctorDashboardService {
         try {
             let res_mongodb = await this.getUserDetailsFromMongoDB(reqSeq);
             if (res_mongodb.status == 200) {
-                connection.query(queries.getPatientConsultaion, [userInfo.diagnosis_id,userInfo.prescription_id], async function (err, res_mysql) {
+                connection.query(queries.getPatientConsultaion, [userInfo.diagnosis_id, userInfo.prescription_id], async function (err, res_mysql) {
                     if (err) {
                         result(err, null);
                     } else {
                         if (res_mysql.length != 0) {
-                            var promiseQuestionAnswer, promiseMedicalHistory 
+                            var promiseQuestionAnswer, promiseMedicalHistory
                             if (res_mysql[0].question_ans != null && res_mysql[0].question_ans != "") {
                                 promiseQuestionAnswer = new Promise((resolve, reject) => {
                                     DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].question_ans, function (resultObj) {
@@ -67,7 +67,12 @@ class DoctorDashboardService {
                                 delete res_mysql[0].question_ans;
                                 delete res_mysql[0].medical_history;
                                 responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
-
+                                if (res_mysql[0].is_pregnant == '1') {
+                                    responseArray.push({ investigation: res_mysql[0].pregnant_investig ? (res_mysql[0].pregnant_investig.split('||').length == 0 ? [res_mysql[0].pregnant_investig] : res_mysql[0].pregnant_investig.split('||')) : [] })
+                                }
+                                else if (res_mysql[0].is_pregnant == '0') {
+                                    responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : [] })
+                                }
                                 result(null, responseArray);
                             })
                                 .catch(error => {
@@ -195,14 +200,13 @@ class DoctorDashboardService {
         try {
             let res_mongodb = await this.getUserDetailsFromMongoDB(reqSeq);
             if (res_mongodb.status == 200) {
-                result(null,res_mongodb.data);
+                result(null, res_mongodb.data);
             }
-            else{
+            else {
                 result(res_mongodb.data, null);
             }
-            
-        }catch(error)
-        {
+
+        } catch (error) {
             console.log("Method:getPatientContactDetailsFromMongoDB,File:DoctorDashboardService.js--> " + error);
             result(error, null);
         }
