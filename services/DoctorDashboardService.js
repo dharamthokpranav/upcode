@@ -68,10 +68,10 @@ class DoctorDashboardService {
                                 delete res_mysql[0].medical_history;
                                 responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
                                 if (res_mysql[0].is_pregnant == '1') {
-                                    responseArray.push({ investigation: res_mysql[0].pregnant_investig ? (res_mysql[0].pregnant_investig.split('||').length == 0 ? [res_mysql[0].pregnant_investig] : res_mysql[0].pregnant_investig.split('||')) : [] })
+                                    responseArray.push({ investigation: res_mysql[0].pregnant_investig ? (res_mysql[0].pregnant_investig.split('||').length == 0 ? [res_mysql[0].pregnant_investig] : res_mysql[0].pregnant_investig.split('||')) : ["NA"] })
                                 }
                                 else if (res_mysql[0].is_pregnant == '0') {
-                                    responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : [] })
+                                    responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
                                 }
                                 result(null, responseArray);
                             })
