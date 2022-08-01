@@ -4,7 +4,7 @@ module.exports = {
     getPatientConsultaion:"SELECT * FROM pres_master_prescription LEFT JOIN pres_data ON pres_master_prescription.diagnosis_id = pres_data.end_result_id WHERE pres_master_prescription.diagnosis_id = ? and pres_data.ID=?",
     updatePatientConsultation:"UPDATE pres_master_prescription SET pres_master_prescription.diagnosis = CASE WHEN ?='' THEN pres_master_prescription.diagnosis ELSE ? END, pres_master_prescription.medicine_prescribed = CASE WHEN ?='' THEN pres_master_prescription.medicine_prescribed ELSE ? END WHERE pres_master_prescription.diagnosis_id = ?",
     getDoctorDashboardList:"SELECT * FROM pres_data  LEFT JOIN pres_data_master on pres_data.topic_id=pres_data_master.topic_id WHERE end_result_id <> -1 ORDER BY date_time DESC",
-    getCurrentDateListCount:"SELECT COUNT(*) as today_count FROM pres_data WHERE end_result_id <> -1 and date(date_time) = CURDATE()",
-    getCurrentWeekListCount:"SELECT COUNT(*) as week_count FROM pres_data WHERE end_result_id <> -1 and YEARWEEK(date_time) = YEARWEEK(NOW())",
+    getCurrentDateListCount:"SELECT (SELECT COUNT(*) as today_count FROM pres_data WHERE end_result_id <> -1 and date(date_time) = CURDATE() and due_status='OKAY') as okay,(SELECT COUNT(*) as today_count FROM pres_data WHERE end_result_id <> -1 and date(date_time) = CURDATE() and due_status='OVERDUE') as over_due",
+    getCurrentWeekListCount:"SELECT (SELECT COUNT(*) as week_count FROM pres_data WHERE end_result_id <> -1 and YEARWEEK(date_time) = YEARWEEK(NOW()) and due_status='OKAY') as okay,(SELECT COUNT(*) as week_count FROM pres_data WHERE end_result_id <> -1 and YEARWEEK(date_time) = YEARWEEK(NOW()) and due_status='OVERDUE') as over_due",
     updateConsultationDueStatus:"UPDATE pres_data SET due_status = 'OVERDUE', due_status_update_time=now() WHERE ID in (?)"
 }

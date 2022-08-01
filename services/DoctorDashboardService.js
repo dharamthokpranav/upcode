@@ -133,8 +133,8 @@ class DoctorDashboardService {
                     let response;
                     response = {
                         list: res[0],
-                        today_count: res[1][0].today_count,
-                        week_count: res[2][0].week_count
+                        today_count: res[1][0],
+                        week_count: res[2][0]
                     }
                     result(null, response);
                 }
