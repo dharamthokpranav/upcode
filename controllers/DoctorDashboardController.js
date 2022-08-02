@@ -36,7 +36,7 @@ exports.loginDoctor = (req, res) => {
 exports.getPatientConsultationData = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ "success": false,errors: errors.array() });
+        return res.status(400).json({ "success": false, errors: errors.array() });
     }
     let setdata = {
         diagnosis_id: req.body.diagnosis_id,
@@ -64,12 +64,13 @@ exports.getPatientConsultationData = (req, res) => {
 exports.updatePatientConsultationData = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ "success": false,errors: errors.array() });
+        return res.status(400).json({ "success": false, errors: errors.array() });
     }
     let setdata = {
         medicine_prescribed: req.body.medicine_prescribed,
         diagnosis: req.body.diagnosis,
         diagnosis_id: req.body.diagnosis_id,
+        investigation: req.body.investigation
     };
     var serv = new service();
     serv.updatePatientConsultationData(setdata, function (err, result, fields) {
@@ -96,7 +97,7 @@ exports.patientConsultationAction = (req, res) => {
     };
     // action values= RESERVE, APPROVE
     var serv = new service();
-    serv.getPatientContactDetailsFromMongoDB(setdata,function (err, result) {
+    serv.getPatientContactDetailsFromMongoDB(setdata, function (err, result) {
         try {
             if (err) {
                 res.send(err);
@@ -111,8 +112,8 @@ exports.patientConsultationAction = (req, res) => {
             console.log(error);
         }
     });
-   
-    
+
+
     // response in data parameter can be RESERVE or APPROVE    
 };
 

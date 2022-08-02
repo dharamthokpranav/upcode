@@ -107,7 +107,7 @@ class DoctorDashboardService {
     async updatePatientConsultationData(updateData, result) {
         const connection = dbaccess.openConnection();
         try {
-            connection.query(queries.updatePatientConsultation, [updateData.diagnosis, updateData.diagnosis, updateData.medicine_prescribed, updateData.medicine_prescribed, updateData.diagnosis_id,], function (err, res) {
+            connection.query(queries.updatePatientConsultation, [updateData.diagnosis, updateData.diagnosis, updateData.investigation, updateData.investigation, updateData.medicine_prescribed, updateData.medicine_prescribed, updateData.diagnosis_id,], function (err, res) {
                 if (err) {
                     result(err, null);
                 } else {
