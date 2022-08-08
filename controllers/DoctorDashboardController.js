@@ -1,5 +1,6 @@
 const service = require("../services/DoctorDashboardService");
 const sendEmail = require("../utils/CommomFunctions");
+const constants = require("../utils/constants");
 var moment = require("moment");
 const { validationResult } = require('express-validator');
 const sendpdf = require("../utils/CommomFunctions");
@@ -78,7 +79,7 @@ exports.updatePatientConsultationData = (req, res) => {
             if (err) {
                 res.send(err);
             } else {
-                res.json({ success: true, message: "Patientconsultation data updated successfully", data: result, });
+                res.json({ success: true, message: "Patientconsultation data updated successfully" });
             }
         } catch (error) {
             console.log(error);
@@ -102,11 +103,13 @@ exports.patientConsultationAction = (req, res) => {
             if (err) {
                 res.send(err);
             } else {
-                res.json({ success: true, message: "Patient data found", data: result });
-                // email_to:result.data[0].email
-                // device_token:result.data[0].divicetoken
-                // var emailResponse= sendEmail();
-                // sendpdf();
+               
+                //create html 
+                //Append the dignosis medecene investigation data to the html code
+                //generaete pdf from html
+
+
+
             }
         } catch (error) {
             console.log(error);

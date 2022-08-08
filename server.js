@@ -15,6 +15,7 @@ dotenv.config();
 //Files import
 const doctorsroutes = require('./routes/routes');
 const StatusUpdater = require('./modules/StatusUpdater');
+const Prescription_API_Routing = require("./prescriptionModule/Prescription/Routing/Routing");
 
 
 
@@ -46,6 +47,30 @@ app.use((req, res, next) => {
   next();
 });
 
+//Prabhu's code start
+app.get('/pres/*',processRequest);
+app.post('/pres/*',processRequest);
+
+app.get('/TESTING',TESTING);
+
+async function processRequest(req,res){
+    try {
+        await Prescription_API_Routing.Routing(req,res);
+    } catch (error) {
+        res.send({status:400, message: error.message});
+    }
+}
+
+async function TESTING(req,res){
+    try{
+        res.send({status:200, ISTcurrentTimeStamp:moment().tz("Asia/Colombo").format(),Time:moment().tz("Asia/Colombo").format('h:mm a'),UTC: new Date()});   
+    }catch(error){
+        res.send({status:400, message: error.message});   
+    }
+}
+//Prabhu's code end
+
+
 //express router
 app.use('/api/doctor-dashboard',doctorsroutes);
 
@@ -59,7 +84,7 @@ app.get('/', function (req, res) {
 
 schedule.scheduleJob('*/30 * * * * *', function() { //note : midnight UTC(18:31) is equal to IST(00:01 Or 12:01 am)
   console.log("30 sec Interval scheduler triggered @ IST: "+moment().tz("Asia/Colombo").format()+" and UTC: "+(new Date()))
-   StatusUpdater.statusUpdater();  
+   //StatusUpdater.statusUpdater();  
 });
 
 var port = process.env.PORT || 3000;

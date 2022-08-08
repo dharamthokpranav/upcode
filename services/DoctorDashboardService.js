@@ -13,7 +13,24 @@ class DoctorDashboardService {
                     result(err, null);
                 }
                 else {
-                    result(null, res);
+                    const connection = dbaccess.openConnection();
+                    try {
+                    connection.query(queries.doctorLoginTimeStampUpdate, [res[0].doctor_id], function (err2, res2) {
+                        if (err2) {
+                            result(err2, null);
+                        }
+                        else {
+                            result(null,res,res2);
+                        }
+        
+                    })
+                }catch(error)
+                {
+                    console.log("Method:LoginUser,File:appservice.js--> " + error);
+                }
+                finally {
+                    dbaccess.closeConnection(connection);
+                }
                 }
 
             })
@@ -66,13 +83,24 @@ class DoctorDashboardService {
                             Promise.all([promiseQuestionAnswer, promiseMedicalHistory]).then(data => {
                                 delete res_mysql[0].question_ans;
                                 delete res_mysql[0].medical_history;
-                                responseArray.push({ dignosisAndMedicene: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
+                                let medicineData;
+                                responseArray.push({ dignosis: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
                                 if (res_mysql[0].is_pregnant == '1') {
-                                    responseArray.push({ investigation: res_mysql[0].pregnant_investig ? (res_mysql[0].pregnant_investig.split('||').length == 0 ? [res_mysql[0].pregnant_investig] : res_mysql[0].pregnant_investig.split('||')) : ["NA"] })
+                                   // var substring_medicene=res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||');
+                                    responseArray.push({ investigation: res_mysql[0].pregnant_investigation ? (res_mysql[0].pregnant_investigation.split('||').length == 0 ? [res_mysql[0].pregnant_investigation] : res_mysql[0].pregnant_investigation.split('||')) : ["NA"] })
+                                    if(res_mysql[0].medicine_prescribed != "")
+                                    {
+                                        responseArray.push({medicene_prescribed: res_mysql[0].pregnant_medicine.split('||').length == 0 ? [res_mysql[0].pregnant_medicine] : res_mysql[0].pregnant_medicine.split('||') })
+                                        
+                                    }else{
+                                        responseArray.push({ medicene_prescribed: [] })
+                                    }
                                 }
                                 else if (res_mysql[0].is_pregnant == '0') {
                                     responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
+                                    responseArray.push({ medicene_prescribed: res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||') })
                                 }
+                                responseArray.push({ medicene_note: "note" })
                                 result(null, responseArray);
                             })
                                 .catch(error => {
@@ -227,6 +255,17 @@ class DoctorDashboardService {
         }
     }
 
+     async splitMedicineData(medData) {
+        var tempMedDatamedData= medData.split('||');
+        var splitArray = [];
+        var temp;
+        tempMedDatamedData.forEach((ele) => {
+            temp = ele.split('||');
+            splitArray.push(temp[0].split('#dose'))
+        })
+        return splitArray;
+    }
+
     static async getQuestionAnswersObject(responseObj, callback) {
         let tempQuestionArray = responseObj.split('||').map(value => (JSON.parse(value).QID))
         let tempAnswerMapArray = responseObj.split('||').map(value => ({ QID: JSON.parse(value).QID, ID: JSON.parse(value).ID }))
@@ -243,7 +282,7 @@ class DoctorDashboardService {
                     if (res_questions.length) {
                         let questionsTemp = res_questions.map(value => ({
                             question_id: value.question_id,
-                            question: value.questions,
+                            question: value.doc_question,
                             answer: JSON.parse('[' + value.options + ']').find(({ ID }) => ID === tempAnswerMapArray.find(({ QID }) => QID === value.question_id).ID).Option,
                         }))
                         responseObj = questionsTemp
