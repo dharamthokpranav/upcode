@@ -12,6 +12,7 @@ router.post('/login', body('email').isEmail(), body('password').not().isEmpty(),
 router.post('/getPatientConsultationData', body('diagnosis_id').not().isEmpty(), body('patient_id').not().isEmpty(),body('prescription_id').not().isEmpty(), doctor_controller.getPatientConsultationData)
 router.post('/updatePatientConsultationData', body('diagnosis_id').not().isEmpty(), doctor_controller.updatePatientConsultationData)
 router.post('/patientConsultationAction', doctor_controller.patientConsultationAction)
+router.post('/approveRequest', body('prescription_id').not().isEmpty(),body('topic_id').not().isEmpty(), body('user_id').not().isEmpty(),body('diagnosis_id').not().isEmpty(),doctor_controller.approveRequest)
 router.get('/getDoctorDashboardData', doctor_controller.getDoctorDashboardData)
 
 
