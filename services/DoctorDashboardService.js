@@ -63,7 +63,9 @@ class DoctorDashboardService {
                         result(err, null);
                     } else {
                         if (res_mysql.length != 0) {
-                            var promiseQuestionAnswer, promiseMedicalHistory
+                            var obj= new DoctorDashboardService();
+                            
+                            var promiseQuestionAnswer, promiseMedicalHistory;
                             if (res_mysql[0].question_ans != null && res_mysql[0].question_ans != "") {
                                 promiseQuestionAnswer = new Promise((resolve, reject) => {
                                     DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].question_ans, function (resultObj) {
@@ -86,19 +88,25 @@ class DoctorDashboardService {
                                 let medicineData;
                                 responseArray.push({ dignosis: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
                                 if (res_mysql[0].is_pregnant == '1') {
-                                   // var substring_medicene=res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||');
+                                    // var substring_medicene=res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||');
+
                                     responseArray.push({ investigation: res_mysql[0].pregnant_investigation ? (res_mysql[0].pregnant_investigation.split('||').length == 0 ? [res_mysql[0].pregnant_investigation] : res_mysql[0].pregnant_investigation.split('||')) : ["NA"] })
-                                    if(res_mysql[0].medicine_prescribed != "")
-                                    {
-                                        responseArray.push({medicene_prescribed: res_mysql[0].pregnant_medicine.split('||').length == 0 ? [res_mysql[0].pregnant_medicine] : res_mysql[0].pregnant_medicine.split('||') })
-                                        
-                                    }else{
+                                    if (res_mysql[0].medicine_prescribed != "") {
+                                        obj.splitMedicineData(res_mysql[0].medicine_prescribed, (mediceneElement) => {
+                                            responseArray.push({ medicene_prescribed: mediceneElement })
+                                        });
+
+
+                                    } else {
                                         responseArray.push({ medicene_prescribed: [] })
                                     }
                                 }
                                 else if (res_mysql[0].is_pregnant == '0') {
                                     responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
-                                    responseArray.push({ medicene_prescribed: res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||') })
+                                    obj.splitMedicineData(res_mysql[0].medicine_prescribed, (MedicineElement) => {
+                                        responseArray.push({ medicene_prescribed: MedicineElement })
+                                    });
+
                                 }
                                 responseArray.push({ medicene_note: "note" })
                                 result(null, responseArray);
@@ -255,7 +263,7 @@ class DoctorDashboardService {
         }
     }
 
-     async splitMedicineData(medData) {
+     async splitMedicineData(medData,callback) {
         var tempMedDatamedData= medData.split('||');
         var splitArray = [];
         var temp;
@@ -263,7 +271,7 @@ class DoctorDashboardService {
             temp = ele.split('||');
             splitArray.push(temp[0].split('#dose'))
         })
-        return splitArray;
+        callback(splitArray);
     }
 
     static async getQuestionAnswersObject(responseObj, callback) {
