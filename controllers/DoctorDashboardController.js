@@ -103,7 +103,7 @@ exports.patientConsultationAction = (req, res) => {
             if (err) {
                 res.send(err);
             } else {
-               
+
                 //create html 
                 //Append the dignosis medecene investigation data to the html code
                 //generaete pdf from html
@@ -161,6 +161,31 @@ exports.approveRequest = (req, res) => {
                 res.send(err);
             } else {
                 res.json({ success: true, message: "Request Approved Successfuly", data: result, });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+};
+
+exports.getQuestionAnswersData = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ "success": false, errors: errors.array() });
+    }
+    let setdata = {
+        test_name: req.body.test_name
+    };
+    var serv = new service();
+    serv.getQuestionAnswersData(setdata, function (err, result) {
+        try {
+            if (err) {
+                res.send(err);
+            } else if (result.length === 0) {
+                res.json({ success: false, message: "Question Answer Data Not Found", data: result });
+            }
+            else {
+                res.json({ success: true, message: "Question Answer Data Found", data: result });
             }
         } catch (error) {
             console.log(error);

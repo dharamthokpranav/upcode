@@ -237,6 +237,25 @@ class DoctorDashboardService {
     }
 
 
+    async getQuestionAnswersData(requestData, result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.getQuestionAnswers, [requestData.test_name], function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:getQuestionAnswersData,File:DoctorDashboardService.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+
     async getDoctorDashboardData(result) {
         const connection = dbaccess.openConnection();
         try {
