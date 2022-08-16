@@ -53,110 +53,116 @@ class DoctorDashboardService {
             userid: O_id,
             key: "_id"
         }
-        const connection = dbaccess.openConnection();
+
         try {
-            let res_mongodb = await this.getUserDetailsFromMongoDB(reqSeq);
-            if (res_mongodb.status == 200) {
-                connection.query(queries.checkApproveRequest, [userInfo.prescription_id], function (err, res_exist) {
-                    if (err) {
-                        result(err, null);
-                    }
-                    else if (res_exist.length === 0) {
-
-                        getPatientConsultaionQuery = queries.getPatientConsultaion
-                    }
-                    else {
-                        getPatientConsultaionQuery = queries.getPatientConsultaionFromUser
-                    }
+            let res_mongodb;
+            this.getUserDetailsFromMysql(userInfo, function (data) {
+                res_mongodb = data
+                // });
+                if (res_mongodb.status == 200) {
                     const connection = dbaccess.openConnection();
-                    try {
-                        connection.query(getPatientConsultaionQuery, [userInfo.diagnosis_id, userInfo.prescription_id], async function (err, res_mysql) {
-                            if (err) {
-                                result(err, null);
-                            } else {
-                                if (res_mysql.length != 0) {
-                                    var obj = new DoctorDashboardService();
+                    connection.query(queries.checkApproveRequest, [userInfo.prescription_id], function (err, res_exist) {
+                        if (err) {
+                            result(err, null);
+                        }
+                        else if (res_exist.length === 0) {
 
-                                    var promiseQuestionAnswer, promiseMedicalHistory;
-                                    if (res_mysql[0].question_ans != null && res_mysql[0].question_ans != "") {
-                                        promiseQuestionAnswer = new Promise((resolve, reject) => {
-                                            DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].question_ans, function (resultObj) {
-                                                resolve(resultObj);
-                                            })
-                                        });
-                                    }
+                            getPatientConsultaionQuery = queries.getPatientConsultaion
+                        }
+                        else {
+                            getPatientConsultaionQuery = queries.getPatientConsultaionFromUser
+                        }
+                        const connection = dbaccess.openConnection();
+                        try {
+                            connection.query(getPatientConsultaionQuery, [userInfo.diagnosis_id, userInfo.prescription_id, userInfo.assigned_doctor_id], async function (err, res_mysql) {
+                                if (err) {
+                                    result(err, null);
+                                } else {
+                                    if (res_mysql.length != 0) {
+                                        var obj = new DoctorDashboardService();
 
-                                    // }
-                                    if (res_mysql[0].medical_history != null && res_mysql[0].medical_history != "") {
-                                        promiseMedicalHistory = new Promise((resolve, reject) => {
-                                            DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].medical_history, function (resultObj) {
-                                                resolve(resultObj);
-                                            })
-                                        });
-                                    }
-                                    Promise.all([promiseQuestionAnswer, promiseMedicalHistory]).then(data => {
-                                        delete res_mysql[0].question_ans;
-                                        delete res_mysql[0].medical_history;
-                                        let medicineData;
-                                        responseArray.push({ dignosis: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
-                                        if (res_mysql[0].is_pregnant == '1') {
-                                            // var substring_medicene=res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||');
-                                            responseArray.push({ investigation: res_mysql[0].pregnant_investigation ? (res_mysql[0].pregnant_investigation.split('||').length == 0 ? [res_mysql[0].pregnant_investigation] : res_mysql[0].pregnant_investigation.split('||')) : ["NA"] })
-                                            if (res_mysql[0].medicine_prescribed != "") {
-                                                obj.splitMedicineData(res_mysql[0].pregnant_medicine, (mediceneElement) => {
-                                                    responseArray.push({ medicene_prescribed: mediceneElement })
+                                        var promiseQuestionAnswer, promiseMedicalHistory;
+                                        if (res_mysql[0].question_ans != null && res_mysql[0].question_ans != "") {
+                                            promiseQuestionAnswer = new Promise((resolve, reject) => {
+                                                DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].question_ans, function (resultObj) {
+                                                    resolve(resultObj);
+                                                })
+                                            });
+                                        }
+
+                                        // }
+                                        if (res_mysql[0].medical_history != null && res_mysql[0].medical_history != "") {
+                                            promiseMedicalHistory = new Promise((resolve, reject) => {
+                                                DoctorDashboardService.getQuestionAnswersObject(res_mysql[0].medical_history, function (resultObj) {
+                                                    resolve(resultObj);
+                                                })
+                                            });
+                                        }
+                                        Promise.all([promiseQuestionAnswer, promiseMedicalHistory]).then(data => {
+                                            delete res_mysql[0].question_ans;
+                                            delete res_mysql[0].medical_history;
+                                            let medicineData;
+                                            responseArray.push({ dignosis: res_mysql[0] }, { patient_background: res_mongodb.data[0] }, { chief_complaints: typeof data[0] !== 'undefined' ? data[0] : [] }, { medical_history: typeof data[1] !== 'undefined' ? data[1] : [] })
+                                            if (res_mysql[0].is_pregnant == '1') {
+                                                // var substring_medicene=res_mysql[0].medicine_prescribed.split('||').length == 0 ? [res_mysql[0].medicine_prescribed] : res_mysql[0].medicine_prescribed.split('||');
+                                                responseArray.push({ investigation: res_mysql[0].pregnant_investigation ? (res_mysql[0].pregnant_investigation.split('||').length == 0 ? [res_mysql[0].pregnant_investigation] : res_mysql[0].pregnant_investigation.split('||')) : ["NA"] })
+                                                if (res_mysql[0].medicine_prescribed != "") {
+                                                    obj.splitMedicineData(res_mysql[0].pregnant_medicine, (mediceneElement) => {
+                                                        responseArray.push({ medicene_prescribed: mediceneElement })
+                                                    });
+
+                                                } else {
+                                                    responseArray.push({ medicene_prescribed: [] })
+                                                }
+                                            }
+                                            else if (res_mysql[0].is_pregnant == '0') {
+                                                // let medicine_data = DoctorDashboardService.splitMedicineData(res_mysql[0].medicine_prescribed)
+                                                // responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
+                                                responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
+                                                obj.splitMedicineData(res_mysql[0].medicine_prescribed, (MedicineElement) => {
+                                                    responseArray.push({ medicene_prescribed: MedicineElement })
                                                 });
 
-                                            } else {
-                                                responseArray.push({ medicene_prescribed: [] })
+
                                             }
-                                        }
-                                        else if (res_mysql[0].is_pregnant == '0') {
-                                            // let medicine_data = DoctorDashboardService.splitMedicineData(res_mysql[0].medicine_prescribed)
-                                            // responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
-                                            responseArray.push({ investigation: res_mysql[0].investigation ? (res_mysql[0].investigation.split('||').length == 0 ? [res_mysql[0].investigation] : res_mysql[0].investigation.split('||')) : ["NA"] })
-                                            obj.splitMedicineData(res_mysql[0].medicine_prescribed, (MedicineElement) => {
-                                                responseArray.push({ medicene_prescribed: MedicineElement })
-                                            });
-
-
-                                        }
-                                        responseArray.push({ medicene_note: "note" })
-                                        result(null, responseArray);
-                                    })
-                                        .catch(error => {
-                                            console.log(error)
+                                            responseArray.push({ medicene_note: "note" })
+                                            result(null, responseArray);
                                         })
+                                            .catch(error => {
+                                                console.log(error)
+                                            })
+                                    }
+                                    else {
+                                        result(null, res_mysql)
+                                    }
                                 }
-                                else {
-                                    result(null, res_mysql)
-                                }
-                            }
 
-                        })
-                    } catch (error) {
-                        console.log("Method:getPatientConsultationData,File:DoctorDashboardService.js--> " + error);
-                        result(error, null);
-                    }
-                    finally {
-                        dbaccess.closeConnection(connection);
-                    }
-                })
+                            })
+                        } catch (error) {
+                            console.log("Method:getPatientConsultationData,File:DoctorDashboardService.js--> " + error);
+                            result(error, null);
+                        }
+                        finally {
+                            dbaccess.closeConnection(connection);
+                        }
+                    })
 
-            }
-            else {
-                console.log("Patient data not found");
-            }
+                }
+                else {
+                    console.log("Patient data not found");
+                    result(null, []);
+                }
 
-            //result("Something went wrong", null);
+                //result("Something went wrong", null);
+            });
         }
         catch (error) {
             console.log("Method:getPatientConsultationData,File:DoctorDashboardService.js--> " + error);
             result(error, null);
         }
-        finally {
-            dbaccess.closeConnection(connection);
-        }
+        // finally {
+        //     dbaccess.closeConnection(connection);
+        // }
     }
 
 
@@ -256,10 +262,10 @@ class DoctorDashboardService {
     }
 
 
-    async getDoctorDashboardData(result) {
+    async getDoctorDashboardData(request, result) {
         const connection = dbaccess.openConnection();
         try {
-            connection.query(`${queries.getDoctorDashboardList};${queries.getCurrentDateListCount};${queries.getCurrentWeekListCount}`, function (err, res) {
+            connection.query(`${queries.getDoctorDashboardList};${queries.getCurrentDateListCount};${queries.getCurrentWeekListCount}`, [request.assigned_doctor_id, request.assigned_doctor_id, request.assigned_doctor_id, request.assigned_doctor_id, request.assigned_doctor_id], function (err, res) {
                 if (err) {
                     result(err, null);
                 } else {
@@ -360,6 +366,27 @@ class DoctorDashboardService {
         }
     }
 
+    async getUserDetailsFromMysql(req, callback) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.checkUserQuery, [req.prescription_id], async function (error, FindData) {
+                if (FindData.length > 0) {
+                    callback({ status: 200, message: "success", data: FindData });
+                }
+                else {
+                    callback({ status: 400, message: "No data was found in the database" });
+                }
+            })
+        }
+        catch (error) {
+            console.log("Method:getUserDetailsFromMysql,File:services\DoctorDashboardService.js--> " + error);
+        }
+        finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
+
 
     async splitMedicineData(medData, callback) {
         var tempMedDatamedData = medData.split('||');
@@ -378,7 +405,7 @@ class DoctorDashboardService {
 
         try {
             const connection = dbaccess.openConnection();
-            connection.query(queries.getQuestionAnswers, [tempQuestionArray], async function (error, res_questions) {
+            connection.query(queries.getQuestionAnswersObjectQuery, [tempQuestionArray], async function (error, res_questions) {
                 if (error) {
                     // return ({ status: 502, message: "error", respText: error.message });
                     callback([])
