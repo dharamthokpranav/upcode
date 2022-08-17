@@ -42,7 +42,8 @@ exports.getPatientConsultationData = (req, res) => {
     let setdata = {
         diagnosis_id: req.body.diagnosis_id,
         patient_id: req.body.patient_id,
-        prescription_id: req.body.prescription_id
+        prescription_id: req.body.prescription_id,
+        assigned_doctor_id: req.body.assigned_doctor_id
     };
     var serv = new service();
     serv.getPatientConsultationData(setdata, function (err, result) {
@@ -53,7 +54,7 @@ exports.getPatientConsultationData = (req, res) => {
                 if (result.length > 0) {
                     res.json({ success: true, message: "Patient consultation data found", data: result });
                 } else {
-                    res.json({ success: true, message: "patient consultation data not found", data: result });
+                    res.json({ success: false, message: "patient consultation data not found", data: result });
                 }
             }
         } catch (error) {
@@ -121,8 +122,15 @@ exports.patientConsultationAction = (req, res) => {
 };
 
 exports.getDoctorDashboardData = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ "success": false, errors: errors.array() });
+    }
+    let setData = {
+        assigned_doctor_id: req.body.assigned_doctor_id
+    };
     var serv = new service();
-    serv.getDoctorDashboardData(function (err, result) {
+    serv.getDoctorDashboardData(setData, function (err, result) {
         try {
             if (err) {
                 res.send(err);
@@ -186,6 +194,31 @@ exports.getQuestionAnswersData = (req, res) => {
             }
             else {
                 res.json({ success: true, message: "Question Answer Data Found", data: result });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+};
+
+exports.checkPincode = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ "success": false, errors: errors.array() });
+    }
+    let setdata = {
+        pincode: req.body.pincode
+    };
+    var serv = new service();
+    serv.checkPincode(setdata, function (err, result, fields) {
+        try {
+            if (err) {
+                res.send(err);
+            } else if (result.length != 0) {
+                res.json({ success: true, message: "Pincode serviceable", data: result, });
+            }
+            else {
+                res.json({ success: false, message: "Pincode not serviceable", data: result, });
             }
         } catch (error) {
             console.log(error);
