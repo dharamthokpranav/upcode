@@ -351,6 +351,24 @@ class DoctorDashboardService {
         }
     }
 
+    async checkPincode(requestData, result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.checkPincode, [requestData.pincode], function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:checkPincode,File:DoctorDashboardService.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
 
     //Functions
     async getUserDetailsFromMongoDB(req) {

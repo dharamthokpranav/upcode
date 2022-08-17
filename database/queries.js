@@ -13,7 +13,8 @@ module.exports = {
     approveRequest: "INSERT INTO pres_user_prescription (prescription_id,user_id,diagnosis_id,diagnosis,priliminary_diagnosis,medicine_prescribed,pregnant_medicine,investigation,pregnant_investigation,important_note,pregnant_important_note,topic_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
     checkApproveRequest: "SELECT * FROM pres_user_prescription where prescription_id=?",
     updateApproveRequest: "UPDATE pres_user_prescription SET user_id = ?,diagnosis_id = ?,diagnosis = ?,priliminary_diagnosis = ?,medicine_prescribed = ?,pregnant_medicine = ?,investigation = ?,pregnant_investigation = ?,important_note = ?,pregnant_important_note = ?,topic_id = ? WHERE prescription_id = ?",
-    getQuestionAnswers: "SELECT * FROM labtests_master RIGHT JOIN labtests_faq ON labtests_master.id=labtests_faq.testid where labtests_master.test_name=?"
+    getQuestionAnswers: "SELECT * FROM labtests_master RIGHT JOIN labtests_faq ON labtests_master.id=labtests_faq.testid where labtests_master.test_name=?",
+    checkPincode: "SELECT * FROM pincode where pincode=? and Units='Serviceable'"
 }
 
 // end_result_id=52,51,42,-1

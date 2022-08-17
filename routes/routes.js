@@ -15,6 +15,7 @@ router.post('/patientConsultationAction', doctor_controller.patientConsultationA
 router.post('/approveRequest', body('prescription_id').not().isEmpty(), body('topic_id').not().isEmpty(), body('user_id').not().isEmpty(), body('diagnosis_id').not().isEmpty(), doctor_controller.approveRequest)
 router.post('/getDoctorDashboardData', body('assigned_doctor_id').not().isEmpty(), doctor_controller.getDoctorDashboardData)
 router.post('/getQuestionAnswersData', body('test_name').not().isEmpty(), doctor_controller.getQuestionAnswersData)
+router.post('/checkValidPincode', body('pincode').not().isEmpty(), doctor_controller.checkPincode)
 
 
 router.get('/testCron', StatusUpdater.statusUpdater)

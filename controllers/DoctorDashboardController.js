@@ -200,3 +200,28 @@ exports.getQuestionAnswersData = (req, res) => {
         }
     });
 };
+
+exports.checkPincode = (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ "success": false, errors: errors.array() });
+    }
+    let setdata = {
+        pincode: req.body.pincode
+    };
+    var serv = new service();
+    serv.checkPincode(setdata, function (err, result, fields) {
+        try {
+            if (err) {
+                res.send(err);
+            } else if (result.length != 0) {
+                res.json({ success: true, message: "Pincode serviceable", data: result, });
+            }
+            else {
+                res.json({ success: false, message: "Pincode not serviceable", data: result, });
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    });
+};
