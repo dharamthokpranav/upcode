@@ -369,6 +369,24 @@ class DoctorDashboardService {
         }
     }
 
+    async insertFreshdeskTicket(requestData, result) {
+        const connection = dbaccess.openConnection();
+        try {
+            connection.query(queries.insertFreshdeskTicketQuery, [requestData.description, requestData.email, requestData.priority, requestData.status, requestData.cf_doctor_assigned_name, requestData.cf_payment_amount, requestData.cf_payment_status, requestData.cf_name, requestData.cf_timestamp_when_doctor_has_approved_prescription, requestData.cf_dob, requestData.cf_height, requestData.cf_bmi, requestData.cf_email, requestData.cf_phone_number, requestData.cf_weight, requestData.cf_prescription_status, requestData.cf_tests_booked_name_of_tests, requestData.cf_status_of_the_test, requestData.cf_test_amount_paid, requestData.cf_time_and_date_of_test, requestData.cf_address], function (err, res) {
+                if (err) {
+                    result(err, null);
+                } else {
+                    result(null, res);
+                }
+            }
+            );
+        } catch (error) {
+            console.log("Method:checkPincode,File:DoctorDashboardService.js--> " + error);
+        } finally {
+            dbaccess.closeConnection(connection);
+        }
+    }
+
 
     //Functions
     async getUserDetailsFromMongoDB(req) {

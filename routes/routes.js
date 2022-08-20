@@ -16,6 +16,7 @@ router.post('/approveRequest', body('prescription_id').not().isEmpty(), body('to
 router.post('/getDoctorDashboardData', body('assigned_doctor_id').not().isEmpty(), doctor_controller.getDoctorDashboardData)
 router.post('/getQuestionAnswersData', body('test_name').not().isEmpty(), doctor_controller.getQuestionAnswersData)
 router.post('/checkValidPincode', body('pincode').not().isEmpty(), doctor_controller.checkPincode)
+router.post('/insertFreshdeskTicket', doctor_controller.insertFreshdeskTicket)
 
 
 router.get('/testCron', StatusUpdater.statusUpdater)
