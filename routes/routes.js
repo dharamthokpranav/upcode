@@ -13,15 +13,14 @@ router.post('/getPatientConsultationData', body('diagnosis_id').not().isEmpty(),
 router.post('/updatePatientConsultationData', body('diagnosis_id').not().isEmpty(), doctor_controller.updatePatientConsultationData)
 router.post('/patientConsultationAction', doctor_controller.patientConsultationAction)
 router.post('/approveRequest', body('prescription_id').not().isEmpty(),body('topic_id').not().isEmpty(), body('user_id').not().isEmpty(),body('diagnosis_id').not().isEmpty(),doctor_controller.approveRequest)
-router.post('/approveRequest', body('prescription_id').not().isEmpty(), body('topic_id').not().isEmpty(), body('user_id').not().isEmpty(), body('diagnosis_id').not().isEmpty(), doctor_controller.approveRequest)
 router.post('/getDoctorDashboardData', body('assigned_doctor_id').not().isEmpty(), doctor_controller.getDoctorDashboardData)
 router.post('/getQuestionAnswersData', body('test_name').not().isEmpty(), doctor_controller.getQuestionAnswersData)
-router.post('/checkValidPincode', body('pincode').not().isEmpty(), doctor_controller.checkPincode)
+router.post('/checkServicablePincode', body('pincode').not().isEmpty(), doctor_controller.verifyPincode)
 router.post('/insertFreshdeskTicket', doctor_controller.insertFreshdeskTicket)
 
 
 router.get('/testCron',  StatusUpdater.statusUpdater)
-router.get('/testEmails',  sendEmail)
 router.get('/testCron', StatusUpdater.statusUpdater)
 router.get('/testEmails', sendEmail)
 
+module.exports = router;

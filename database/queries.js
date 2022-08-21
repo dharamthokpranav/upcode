@@ -16,6 +16,7 @@ module.exports = {
     getQuestionAnswers: "SELECT * FROM labtests_master RIGHT JOIN labtests_faq ON labtests_master.id=labtests_faq.testid where labtests_master.test_name=?",
     checkPincode: "SELECT * FROM pincode_data where pincode=? and Units='Serviceable'",
     insertFreshdeskTicketQuery: "INSERT INTO freshdesk_tickets (description,email,priority,status,cf_doctor_assigned_name,cf_payment_amount,cf_payment_status,cf_name,cf_timestamp_when_doctor_has_approved_prescription,cf_dob,cf_height,cf_bmi,cf_email,cf_phone_number,cf_weight,cf_prescription_status,cf_tests_booked_name_of_tests,cf_status_of_the_test,cf_test_amount_paid,cf_time_and_date_of_test,cf_address) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+
 }
 
 
