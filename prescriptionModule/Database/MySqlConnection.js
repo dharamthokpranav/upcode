@@ -1,11 +1,11 @@
 const knex = require('knex')({
     client: 'mysql2',
     connection: {
-        host: process.env.HOST,
-        port: process.env.DBPORT,
-        user: process.env.USER,
-        password: process.env.PASSWORD,
-        database: process.env.DATABASE,
+        host: 'pinkypromise-mysql.chrnnbie7jll.ap-south-1.rds.amazonaws.com',
+        port: 3306,
+        user: 'admin',
+        password: 'PinkyPromiseMySQL',
+        database: 'master',
         requestTimeout: 600000,
         options: {
             enableArithAbort: true,

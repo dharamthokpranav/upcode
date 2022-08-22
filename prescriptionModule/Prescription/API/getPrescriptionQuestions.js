@@ -106,7 +106,7 @@ async function getPrescriptionQuestions(req, res) {
             console.log(QuestionID)
             let Response = await knex.raw("select * from pres_questions where id=? and topic_id=?", [QuestionID, TopicID]);
             Response = Response[0];
-            //console.log(Response)
+            console.log(Response)
             if (Response.length > 0) {
                 Response = Response[0];
                 let Options = Response.options.split("},{");
@@ -117,17 +117,18 @@ async function getPrescriptionQuestions(req, res) {
                 }
                 Response.options = Options;
                 if (QuestionID === 20) {
-                    let getUserInfo = {
-                        collection:"userdetails",
-                        query:{_id: new mongo.ObjectID(UserID)},
-                        Project:true,
-                        ProjectData:{lastPeriodsDate:1,avgMenstrualCycle:1},
-                        Limit:true,
-                        LimitValue:1
-                    }
-                    let UserInfo = await MongoConnect.GetAccess(getUserInfo);
-                    UserInfo = UserInfo[0];
-                    console.log(UserInfo);
+                    // let getUserInfo = {
+                    //     collection:"userdetails",
+                    //     query:{_id: new mongo.ObjectID(UserID)},
+                    //     Project:true,
+                    //     ProjectData:{lastPeriodsDate:1,avgMenstrualCycle:1},
+                    //     Limit:true,
+                    //     LimitValue:1
+                    // }
+                    // let UserInfo = await MongoConnect.GetAccess(getUserInfo);
+                    // UserInfo = UserInfo[0];
+                    // console.log("UserInfo");
+                    // console.log(UserInfo);
                     // if(UserInfo.lastPeriodsDate!==undefined&&UserInfo.avgMenstrualCycle!==undefined){
                     //     let nextDate = moment(UserInfo.lastPeriodsDate,"YYYY-MM-DD").add(UserInfo.avgMenstrualCycle,'days');
                     let lastPeriodDate = Answers.find(data=>data.QID===18)
@@ -140,7 +141,7 @@ async function getPrescriptionQuestions(req, res) {
                         var durationDays = duration.input;
                     }
                     // console.log(durationDays)
-                    if(UserInfo.avgMenstrualCycle!==undefined){
+                    // if(UserInfo.avgMenstrualCycle!==undefined){
                         let nextDate = moment(lastPeriodDateInput,"YYYY-MM-DD").add(durationDays,'days');
                         // console.log("nextDate: "+nextDate)
                         let OvulationDate = nextDate.subtract(14,'days');
@@ -156,7 +157,7 @@ async function getPrescriptionQuestions(req, res) {
                         // console.log(dates)
                         // Did you notice this pinkish discharge or reddish/brownish on any of these days (display range of 7 days above)
                         Response.questions = Response.questions.replace('display range of 7 days above', dates)
-                    }
+                    // }
                 }
                 return (Response);
             } else {
@@ -211,10 +212,15 @@ async function getPrescriptionQuestions(req, res) {
                     let breastFeedCheck = Answers.filter(data=>{return((data.QID===70&&data.ID===1)||((data.QID===71||data.QID===72||data.QID===73||data.QID===74)&&data.ID===2))});
                     if(breastFeedCheck.length === 5){
                         QuestionID=79
+                    }else{
+                        let CheckCondition = Answers.filter(data=>{
+                            return(data.QID===69||data.QID===70||data.QID===71||data.QID===72||data.QID===73||data.QID===74)
+                        })
+                        // console.log(CheckCondition.length)
+                        if(CheckCondition.length === 6){
+                            return({"respCode": 2,"nextRef": -1});
+                        }
                     }
-                    // else{
-                    //     return({message:"There is no further Questions", nextref:"getPrescriptionMessage"});
-                    // }
                 }
             }
             // console.log(whereClause)

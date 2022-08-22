@@ -11,9 +11,12 @@ dotenv.config();
 //End of dependencies
 
 
+//Routes
+const doctorsroutes = require('./routes/routes');
+const pathRoutes = require('./routes/path_routes');
+
 
 //Files import
-const doctorsroutes = require('./routes/routes');
 const StatusUpdater = require('./modules/StatusUpdater');
 const Prescription_API_Routing = require("./prescriptionModule/Prescription/Routing/Routing");
 
@@ -47,6 +50,18 @@ app.use((req, res, next) => {
   next();
 });
 
+
+//express router
+app.use('/api/doctor-dashboard', doctorsroutes);
+app.use('/api/pathology-test', pathRoutes);
+
+//TEST API
+app.get('/', function (req, res) {
+  res.status(200).send('Hello World!');
+});
+
+
+
 //Prabhu's code start
 app.get('/pres/*',processRequest);
 app.post('/pres/*',processRequest);
@@ -71,17 +86,7 @@ async function TESTING(req,res){
 //Prabhu's code end
 
 
-//express router
-app.use('/api/doctor-dashboard',doctorsroutes);
-
-//TEST API
-app.get('/', function (req, res) {
-  res.status(200).send('Hello World!');
-});
-
 //Schedulers
-
-
 schedule.scheduleJob('*/30 * * * * *', function() { //note : midnight UTC(18:31) is equal to IST(00:01 Or 12:01 am)
   console.log("30 sec Interval scheduler triggered @ IST: "+moment().tz("Asia/Colombo").format()+" and UTC: "+(new Date()))
    //StatusUpdater.statusUpdater();  

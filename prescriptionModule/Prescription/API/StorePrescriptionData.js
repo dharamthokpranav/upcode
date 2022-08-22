@@ -579,27 +579,34 @@ async function StorePrescriptionData(req, res) {
             }
             // console.log("EndResultId")
             // console.log(EndResultId)
-            await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]);
-            if(EndResultId === -1){
-                //generate ticket pranav
-                return ({ status: 200, message: "success",EndResultId:EndResultId, EndMessage: "Sorry! Given your responses, our doctors are unable to provide you a prescription. If you think you have made a mistake in describing your symptoms to us, please re-start your consult. If you think we have made a mistake, please reach-out on contact@askpinkypromise.com and we will address your issue ASAP."});
-            }else{
-                //generate ticket pranav
-                let getResponse = await knex.raw("select * from pres_results where topic_id=5 and id=?",[EndResultId])
-                getResponse = getResponse[0];
-                // console.log(getResponse)
-                if(getResponse.length>0){
-                    getResponse = getResponse[0];
-                    if(getResponse.next_ref !== -1){
-                        let MessageResp = await knex.raw("select * from pres_results where topic_id=5 and id=?",[getResponse.next_ref])
-                        return ({ status: 200, message: "success",EndResultId:EndResultId, EndMessage: MessageResp[0][0].message});
+            return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]).then(async function(resultData){
+                if(resultData.length>0){
+                    let PresId = resultData[0].insertId;
+                    
+                    var assignDoctorResponse= await assignDoctor(PresId);
+                    console.log(assignDoctorResponse);
+                    if(EndResultId === -1){
+                        return ({ respCode: 200, Message: "success",EndResultId:EndResultId, PresId:PresId, EndMessage: "Sorry! Given your responses, our doctors are unable to provide you a prescription. If you think you have made a mistake in describing your symptoms to us, please re-start your consult. If you think we have made a mistake, please reach-out on contact@askpinkypromise.com and we will address your issue ASAP."});
                     }else{
-                        return ({ status: 200, message: "success",EndResultId:EndResultId});
+                        let getResponse = await knex.raw("select * from pres_results where topic_id=5 and id=?",[EndResultId])
+                        getResponse = getResponse[0];
+                        // console.log(getResponse)
+                        if(getResponse.length>0){
+                            getResponse = getResponse[0];
+                            if(getResponse.next_ref !== -1){
+                                let MessageResp = await knex.raw("select * from pres_results where topic_id=5 and id=?",[getResponse.next_ref])
+                                return ({ respCode: 200, Message: "success",EndResultId:EndResultId, PresId:PresId, EndMessage: MessageResp[0][0].message});
+                            }else{
+                                return ({ respCode: 200, Message: "success",EndResultId:EndResultId, PresId:PresId});
+                            }
+                        }else{
+                            return ({ respCode: 200, Message: "success",EndResultId:EndResultId, PresId:PresId, });
+                        }
                     }
                 }else{
-                    return ({ status: 200, message: "success",EndResultId:EndResultId });
+                    return ({ respCode: 400, Message: "Error while saving prescription data....!" });
                 }
-            }
+            })
         } else if (TopicID === 1) {
             let EndResultId = 0;
             let Check1to9Question = Answers.filter(data=>data.QID===51);
@@ -654,18 +661,43 @@ async function StorePrescriptionData(req, res) {
                 let bmi = bmiScore>=35?true:false;
                 if (data.length > 0 || (Question3.length===1 && age >= 35)) {
                     EndResultId = 39 // Only users
-                    let Response = await knex.raw("select * from pres_results where id=? and topic_id=?", [EndResultId, TopicID]);
+                    let Response = await knex.raw("select * from  where id=? and topic_id=?", [EndResultId, TopicID]);
                     Response = Response[0][0];    
-                    return ({ respCode: 200, Message: Response.message, NextRef:-1, refType:"result", })
+                    return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]).then(async function(resultData){
+                        if(resultData.length>0){
+                            let PresId = resultData[0].insertId;
+                            var assignDoctorResponse= await assignDoctor(PresId);
+                                
+                            return ({ respCode: 200, Message: Response.message, PresId:PresId, NextRef:-1, refType:"result"})
+                        }else{
+                            return ({ respCode: 400, Message: "Error while saving prescription data....!" });
+                        }
+                    })
+
                 }else if(result2.length > 0){
                     EndResultId = 40 // Only users
                     let Response = await knex.raw("select * from pres_results where id=? and topic_id=?", [EndResultId, TopicID]);
                     Response = Response[0][0];    
-                    return ({ respCode: 200, Message: Response.message, NextRef:-1, refType:"result"})
+                    return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]).then(async function(resultData){
+                        if(resultData.length>0){
+                            let PresId = resultData[0].insertId;
+                            var assignDoctorResponse= await assignDoctor(PresId);
+                            return ({ respCode: 200, Message: Response.message, PresId:PresId, NextRef:-1, refType:"result"})
+                        }else{
+                            return ({ respCode: 400, Message: "Error while saving prescription data....!" });
+                        }
+                    })
                 }else if(result3.length > 0 || (Question3.length===1 && age < 35) || bmi){
                     EndResultId = 41
-                    await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]);
-                    return ({ respCode: 200, Message: "Success"})
+                    return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]).then(async function(resultData){
+                        if(resultData.length>0){
+                            let PresId = resultData[0].insertId;
+                            var assignDoctorResponse= await assignDoctor(PresId);
+                            return ({ respCode: 200, Message: "success", PresId:PresId})
+                        }else{
+                            return ({ respCode: 400, Message: "Error while saving prescription data....!" });
+                        }
+                    })
                 }else{
                     return({respCode:200, NextRef:51, refType:"Questions"})
                 }
@@ -708,8 +740,15 @@ async function StorePrescriptionData(req, res) {
                 if (Nine.length >= 1 && Six.length === 1 && Question6.ID !== 1) { EndResultId = 64; }
                 let Ten = Answers.filter(data => (data.QID === 51||data.QID === 52||data.QID === 53||data.QID === 54||data.QID === 55||data.QID === 58) && data.ID === 1)
                 if (Ten.length >= 1 && Six.length === 1 && Question6.ID !== 1 && Question8.ID !== 1) { EndResultId = 65; }
-                await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]);
-                return ({ respCode: 200, Message: "Success",EndResultId:EndResultId})
+                return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id) values(?,?,'Pending',?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID]).then(async function(resultData){
+                    if(resultData.length>0){
+                        let PresId = resultData[0].insertId;
+                        var assignDoctorResponse= await assignDoctor(PresId);
+                        return ({ respCode: 200, Message: "success", PresId:PresId, EndResultId:EndResultId})
+                    }else{
+                        return ({ respCode: 400, Message: "Error while saving prescription data....!" });
+                    }
+                })
             }
         } else if (TopicID === 4) {
             // Checking No Prescription Part
@@ -809,42 +848,50 @@ async function StorePrescriptionData(req, res) {
                 }
             }
 
-            console.log(EndResultId)
-            // 47	UTI
-            // 48	Possible UTI
-            // 50	Recurrent UTI
-            // 51	No UTI
-            // 52	Escalate for in-person consult
-            let response = {}
-            await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id,is_pregnant) values(?,?,'Pending',?,?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID, isPregnent]);
-            if (UTIdiagnosis || PossibleUTI || RecurrentUTI || NoUTI || InPersonConsult) {
-                if (UTIdiagnosis || PossibleUTI || RecurrentUTI) {
-                    response = { 
-                        respCode: 200, Message:"success", UserMessage:"Thanks a lot for giving me all your answers! I will be back in a few minutes with your prescription and we can then discuss any further questions you may have"
-                    };
-                }else if (NoUTI) {
-                    response = { 
-                        respCode: 200, Message:"success", UserMessage:"Sorry! Based on your symptoms, it does not seem like you have a UTI. None of \
-                    the typical symptoms of UTI like burning sensation while peeing, frequent urge to \
-                    urinate, passing small amounts of urine, pain in abdominal area, strong smelling urine, \
-                    etc were shown by you. If you think we may be incorrect, please leave your \
-                    phone number below so our care team can contact you!"}
-                }else if (InPersonConsult) {
-                    response = { 
-                        respCode: 200, Message: "success", UserMessage:"You have reported that you have fever with chills and/or you often see blood in your urine. Please see a doctor in person as you may have symptoms that require immideate attention"
+                console.log(EndResultId)
+                // 47	UTI
+                // 48	Possible UTI
+                // 50	Recurrent UTI
+                // 51	No UTI
+                // 52	Escalate for in-person consult
+                let response = {}
+                return await knex.raw("insert into pres_data(user_id,end_result_id,doctor_status,question_ans,medical_history,topic_id,is_pregnant) values(?,?,'Pending',?,?,?,?)", [UserID, EndResultId, questionsDataString, MedHistoryDataString, TopicID, isPregnent]).then(async function(resultData){
+                    if(resultData.length>0){
+                        let PresId = resultData[0].insertId;
+                        var assignDoctorResponse= await assignDoctor(PresId);
+                        if (UTIdiagnosis || PossibleUTI || RecurrentUTI || NoUTI || InPersonConsult) {
+                            if (UTIdiagnosis || PossibleUTI || RecurrentUTI) {
+                                response = { 
+                                    respCode: 200, Message:"success", UserMessage:"Thanks a lot for giving me all your answers! I will be back in a few minutes with your prescription and we can then discuss any further questions you may have"
+                                };
+                            }else if (NoUTI) {
+                                response = { 
+                                    respCode: 200, Message:"success", UserMessage:"Sorry! Based on your symptoms, it does not seem like you have a UTI. None of \
+                                the typical symptoms of UTI like burning sensation while peeing, frequent urge to \
+                                urinate, passing small amounts of urine, pain in abdominal area, strong smelling urine, \
+                                etc were shown by you. If you think we may be incorrect, please leave your \
+                                phone number below so our care team can contact you!"}
+                            }else if (InPersonConsult) {
+                                response = { 
+                                    respCode: 200, Message: "success", UserMessage:"You have reported that you have fever with chills and/or you often see blood in your urine. Please see a doctor in person as you may have symptoms that require immideate attention"
+                                }
+                            }
+                        } else {
+                            let result = await knex.raw("select message from pres_results where id=?",[EndResultId])
+                            response = { 
+                                respCode: 200, Message: "success"
+                            }
+                            if(result.length>0){
+                                response.UserMessage=result[0][0].message
+                            }
+                        }
+                        response.EndResultId = EndResultId;
+                        response.PresId=PresId;
+                        return(response);
+                    }else{
+                        return ({ respCode: 400, Message: "Error while saving prescription data....!" });
                     }
-                }
-            } else {
-                let result = await knex.raw("select message from pres_results where id=?",[EndResultId])
-                response = { 
-                    respCode: 200, Message: "success"
-                }
-                if(result.length>0){
-                    response.UserMessage=result[0][0].message
-                }
-            }
-            response.EndResultId = EndResultId;
-            return(response);
+                })
             }
         }
     } catch (error) {
@@ -852,4 +899,46 @@ async function StorePrescriptionData(req, res) {
         return ({ status: 400, message: error.message });
     }
 }
+
+async function assignDoctor(pres_id) {
+    var availableDoctor;
+    var response = await knex.select('*').from('doctor_details');
+    // console.log(response)
+
+    var currentTime = moment().format('hh:mm A')
+        var result = await checkDoctorAvailability(response,currentTime);
+        if (result != 0 ) {
+             await knex('pres_data').where('ID', '=', pres_id).update({assigned_doctor_id: result })
+                } 
+}
+
+ async function checkDoctorAvailability(response,currentTime) {
+    var availableDoctorId=0;
+    await response.forEach(function (data) {
+        var isTimeValid = false;
+        var startTime = moment(data.doctor_shift_start, 'h:mma');
+        var midnight = moment('12:00 AM', 'h:mma');
+        var endTime = moment(data.doctor_shift_end, 'h:mma');
+        var inputtedTime = moment(currentTime, 'h:mma');
+
+        if (endTime.isBefore(startTime)) {
+            if (inputtedTime.isBetween(midnight, endTime, null, '[]')) {
+                inputtedTime.add(1, 'days');
+                console.log("adjusted input time to next day");
+            }
+
+            endTime.add(1, 'days');
+            console.log("adjusted end time to next day");
+        }
+
+
+        isTimeValid = inputtedTime.isBetween(startTime, endTime);
+        if (isTimeValid) {
+            console.log(" doctor available");
+            availableDoctorId=data.doctor_id;
+        }
+    })
+    return availableDoctorId;
+}
 exports.processInput = StorePrescriptionData;
+// exports.processInput = assignDoctor;

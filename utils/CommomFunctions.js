@@ -3,26 +3,35 @@ var pdf = require("pdf-creator-node");
 var fs = require("fs");
 var FCM = require('fcm-node');
 
-async function sendEmail(subject,text,email,recipientEmails) {
+class commonOprations {
+
+  constructor(){}
+
+async  sendEmail(subject,body,data) {
     let user = process.env.NODEMAILER_USER
     let pass = process.env.NODEMAILER_PASSWORD;
     let from = 'samuser@3010@gmail.com';
-    let htmlContent = "HTML";
-    let subjectContent = "Hello";
+    let htmlContent = body;
+    let subjectContent = subject;
     
     var transporter = nodemailer.createTransport('smtps://'+user+':'+pass+'@smtp.gmail.com');
   
     let info = await transporter.sendMail({
-      from: from, // sender address
-      to: recipientEmails, // list of receivers
-      subject: subjectContent, // Subject line
-      html: htmlContent, // html body
+      from: from,
+      to: data.recipientEmail,
+      subject: subjectContent,
+      html: htmlContent,
+      attachments: [{
+        filename: 'Prescription.pdf',
+        path: data.pdfPath,
+        contentType: 'application/pdf'
+      }],
     });
   
     return  info;
   }
 
-  async function sendPushNotification()
+  async   sendPushNotification(userInfo)
   {
     if(Response.status === 200){
       if(Response.Data.length>0){
@@ -39,12 +48,12 @@ async function sendEmail(subject,text,email,recipientEmails) {
               notification: {
                   title: NotificationTitle,
                   body: NotificationBody,
-                  additionalData : {'message_id':messageId,'room_id':ChatRoomId}
+                  // additionalData : {'message_id':messageId,'room_id':ChatRoomId}
               },
               data: {
                   title: NotificationTitle,
                   body: NotificationBody,
-                  additionalData : {'message_id':messageId,'room_id':ChatRoomId}
+                  // additionalData : {'message_id':messageId,'room_id':ChatRoomId}
               }
           };
           fcm.send(message, function(err, response){
@@ -62,59 +71,6 @@ async function sendEmail(subject,text,email,recipientEmails) {
       }
   }
   }
-  module.exports=sendEmail;
+}
 
-
-
-
-  // async function sendpdf(subject,text,email) {
-
-// var pdftemp=`<!DOCTYPE html>
-// <html>
-//   <head>
-//     <meta charset="utf-8" />
-//     <title>Hello world!</title>
-//   </head>
-//   <body>
-//     <h1>User List</h1>
-//     <ul>
-//      ddd
-//       <li>Name: Pranv</li>
-//       <li>Age: 27</li>
-//       <br />
-//       cc
-//     </ul>
-//   </body>
-// </html>`;
-// var options = {
-//   format: "A3",
-//   orientation: "portrait",
-//   border: "10mm",
-//   header: {
-//       height: "45mm",
-//       contents: '<div style="text-align: center;">Author: Shyam Hajare</div>'
-//   },
-//   footer: {
-//       height: "28mm",
-//       contents: {
-//           first: 'Cover page',
-//           2: 'Second page', // Any page number is working. 1-based index
-//           default: '<span style="color: #444;"></span>/<span></span>', // fallback value
-//           last: 'Last Page'
-//       }
-//   }
-// };
-// var document = {
-//   html:pdftemp,
-   
-//   path: "./output.pdf",
-//   type: "",
-// };
-//   pdf.create(document, options)
-//   .then((res) => {
-//     console.log(res);
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });
-// }
+module.exports = commonOprations;
