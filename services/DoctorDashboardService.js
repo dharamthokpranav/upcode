@@ -187,9 +187,21 @@ class DoctorDashboardService {
         }
     }
 
-    async approveRequest(data, result) {
+    async updatePatientConsultationDataNew(data, result) {
         const connection = dbaccess.openConnection();
         try {
+            if (data.pregnant_medicine != null && data.pregnant_medicine != "" && typeof(data.pregnant_medicine) != undefined ) {
+                data.pregnant_medicine = await this.joinMedicineData(data.pregnant_medicine)
+            } else{
+                data.pregnant_medicine="";
+            }
+            
+            if (data.medicine_prescribed != null && data.medicine_prescribed != "" && typeof(data.medicine_prescribed) != undefined ) {
+                data.medicine_prescribed = await this.joinMedicineData(data.medicine_prescribed)
+            }
+            else{
+                data.medicine_prescribed ="";
+            }
             connection.query(queries.checkApproveRequest, [data.prescription_id], function (err, res_exist) {
                 if (err) {
                     result(err, null);
@@ -198,7 +210,7 @@ class DoctorDashboardService {
                     const connection = dbaccess.openConnection();
                     // check if data exist or not
                     try {
-                        connection.query(queries.approveRequest, [data.prescription_id, data.user_id, data.diagnosis_id, data.diagnosis, data.priliminary_diagnosis, data.medicine_prescribed, data.pregnant_medicine, data.investigation, data.pregnant_investigation, data.important_note, data.pregnant_important_note, data.topic_id], function (err, res) {
+                        connection.query(queries.updatePatientConsultationDataNew, [data.prescription_id, data.user_id, data.diagnosis_id, data.diagnosis, data.priliminary_diagnosis, data.medicine_prescribed, data.pregnant_medicine, data.investigation, data.pregnant_investigation, data.important_note, data.pregnant_important_note, data.topic_id], function (err, res) {
                             if (err) {
                                 result(err, null);
                             } else {
@@ -207,7 +219,7 @@ class DoctorDashboardService {
                         }
                         );
                     } catch (error) {
-                        console.log("Method:approveRequest,File:DoctorDashboardService.js--> " + error);
+                        console.log("Method:updatePatientConsultationDataNew,File:DoctorDashboardService.js--> " + error);
                     } finally {
                         dbaccess.closeConnection(connection);
                     }
@@ -225,7 +237,7 @@ class DoctorDashboardService {
                         }
                         );
                     } catch (error) {
-                        console.log("Method:approveRequest,File:DoctorDashboardService.js--> " + error);
+                        console.log("Method:updatePatientConsultationDataNew,File:DoctorDashboardService.js--> " + error);
                     } finally {
                         dbaccess.closeConnection(connection);
                     }
@@ -235,7 +247,7 @@ class DoctorDashboardService {
 
         }
         catch (error) {
-            console.log("Method:LoginUser,File:appservice.js--> " + error);
+            console.log("Method:updatePatientConsultationDataNew,File:appservice.js--> " + error);
         }
         finally {
             dbaccess.closeConnection(connection);
@@ -322,7 +334,7 @@ class DoctorDashboardService {
             }
             );
         } catch (error) {
-            console.log("Method:LoginUser,File:appservice.js--> " + error);
+            console.log("Method:getPatientConsultationList,File:appservice.js--> " + error);
         } finally {
             dbaccess.closeConnection(connection);
         }
@@ -401,12 +413,13 @@ class DoctorDashboardService {
             throw error
         }
     }
+    // An error occurred while loading instance info: connect ETIMEDOUT 65.1.47.64:27017
 
     async getUserDetailsFromMysql(req, callback) {
         const connection = dbaccess.openConnection();
         try {
             connection.query(queries.checkUserQuery, [req.prescription_id], async function (error, FindData) {
-                if (FindData.length > 0) {
+                if (FindData.length > 0 ) { //&& typeof(FindData)!= "undefined"
                     callback({ status: 200, message: "success", data: FindData });
                 }
                 else {
@@ -434,6 +447,18 @@ class DoctorDashboardService {
         })
         callback(splitArray);
     }
+
+    async joinMedicineData(medData) {
+        var tempMed = [];
+        var medicineData;
+        medData.forEach((ele) => {
+            tempMed.push(ele.join('#dose'));
+        })
+        medicineData = tempMed.join('||');
+        return medicineData;
+    }
+
+
 
     static async getQuestionAnswersObject(responseObj, callback) {
         let tempQuestionArray = responseObj.split('||').map(value => (JSON.parse(value).QID))

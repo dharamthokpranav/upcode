@@ -143,7 +143,7 @@ exports.getDoctorDashboardData = (req, res) => {
     });
 };
 
-exports.approveRequest = (req, res) => {
+exports.updatePatientConsultationDataNew = (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ "success": false, errors: errors.array() });
@@ -160,15 +160,18 @@ exports.approveRequest = (req, res) => {
         pregnant_investigation: req.body.pregnant_investigation,
         important_note: req.body.important_note,
         pregnant_important_note: req.body.pregnant_important_note,
-        topic_id: req.body.topic_id
+        topic_id: req.body.topic_id,
+        is_pregnant: req.body.is_pregnant
     };
+    
+    console.log(setdata);
     var serv = new service();
-    serv.approveRequest(setdata, function (err, result, fields) {
+    serv.updatePatientConsultationDataNew(setdata, function (err, result, fields) {
         try {
             if (err) {
                 res.send(err);
             } else {
-                res.json({ success: true, message: "Request Approved Successfuly", data: result, });
+                res.json({ success: true, message: "Patient Consultation Data Updated Successfully" });
             }
         } catch (error) {
             console.log(error);
